@@ -1,95 +1,114 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+import Link from "next/link";
+import styles from "../app/page.module.css";
+import { performRequest } from "@/../lib/datocms";
 
-export default function Home() {
+const PAGE_CONTENT_QUERY = `
+{
+  startpage {
+    title
+    content {
+      value
+    }
+    mainImage {
+      url
+    }
+  }
+  allProducts {
+    mainImage {
+      url
+    }
+  }
+}`;
+
+export default async function Home() {
+  const { data } = await performRequest({ query: PAGE_CONTENT_QUERY });
+
+  const sectionStyle = {
+    backgroundImage: `url(${data.startpage.mainImage.url})`,
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main
+      style={{
+        marginTop: "5em",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <section className={styles.topImg} style={sectionStyle}>
+        <h1
+          style={{
+            position: "relative",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            fontSize: "40px",
+          }}
+        >
+          {data.startpage.title}
+        </h1>
+      </section>
+      <section className={styles["body-text"]}>
+        {data.startpage.content.value.document.children.map((e) =>
+          e.children.map((i) => <ContentComponent data={i.value} />)
+        )}
+      </section>
+      <section>
+        <Link
+          href="/products"
+          style={{ display: "flex", justifyContent: "center" }}
+        >
+          <button className={styles.buttons}>Current offers & products</button>
+        </Link>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "25% 50% 25%",
+            rowGap: "20px",
+            padding: "4em 0",
+            maxWidth: "1200px",
+            margin: "auto",
+            justifyContent: "center",
+          }}
+        >
+          {data.allProducts.map((e) => (
+            <div style={{ width: "100%", height: "100%" }}>
+              <img
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  padding: "0 10px",
+                }}
+                src={e.mainImage.url}
+              />
+            </div>
+          ))}
         </div>
-      </div>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
+        <div style={{ padding: "4em" }}>
+          <h2 style={{ textAlign: "center" }}>
+            Contact us for more information
           </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+          <Link
+            href="/contact"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "2em 0 4em 0",
+            }}
+          >
+            <button className={styles.buttons}>Contact us</button>
+          </Link>
+        </div>
+      </section>
     </main>
-  )
+  );
 }
+
+const ContentComponent = (props) => {
+  const { data } = props;
+  return <p>{data}</p>;
+};
